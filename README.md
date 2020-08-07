@@ -1,5 +1,5 @@
 # YiriAir
-YiriAir 是一款基于**安卓模拟器**和 **Airtest（Poco）**的 QQ 消息自动收发框架。
+YiriAir 是一款基于**安卓模拟器**和 <strong>Airtest（Poco）</strong>的 QQ 消息自动收发框架。
 在目前第三方协议基本不可用的状况下，这是较为可行的替代方案之一。
 
 ---
@@ -39,6 +39,7 @@ if __name__ == '__main__':
 ---
 ## 开源许可证
 Airtest 版权归网易有限公司所有，本项目其他代码遵守：
+
 GNU AFFERO GENERAL PUBLIC LICENSE version 3
 
 其中部分要求:
@@ -48,4 +49,4 @@ GNU AFFERO GENERAL PUBLIC LICENSE version 3
 
 ---
 ## 支持
-本项目仍在开发阶段。如有问题，欢迎提出 Issue。
+本项目仍在开发阶段。如有问题，欢迎[提出 Issue](https://github.com/Wybxc/YiriAir/issues/new/choose)。
