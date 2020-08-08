@@ -19,7 +19,7 @@ YiriAir需要在安卓模拟器上运行**QQ极速版**，经个人测试，表�
 
 以下是使用样例：
 ```Python
-from yiriair import YiriAir, Devices
+from YiriAir import YiriAir, Devices
 
 if __name__ == '__main__':
     yiri = YiriAir(Devices.XIAO_YAO) # 使用逍遥模拟器
