@@ -1,7 +1,7 @@
 # -*- encoding=utf8 -*-
 import time
 from poco.drivers.android.uiautomation import AndroidUiautomationPoco
-from poco.exceptions import PocoNoSuchNodeException, PocoTargetRemovedException
+from poco.exceptions import PocoNoSuchNodeException
 from airtest.core.api import auto_setup, keyevent, start_app
 import logging
 
