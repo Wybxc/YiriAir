@@ -1,7 +1,8 @@
 # -*- encoding=utf8 -*-
 
 import time
-from .driver import PocoDriver, Session
+from hrpc.exceptions import RpcRemoteException
+from .driver import PocoDriver, Session, logger_yiri
 
 
 class YiriAir():
@@ -26,9 +27,13 @@ class YiriAir():
 
     def run(self):
         while True:
-            messages = self.current_session.check_latest_message()
-            for msg in messages:
-                for hook in self.message_hooks:
-                    hook(msg, self.current_session.title)
-            self.current_session = self.current_session.jump_to_new_session()
+            try:
+                messages = self.current_session.check_latest_message()
+                for msg in messages:
+                    for hook in self.message_hooks:
+                        hook(msg, self.current_session.title)
+                self.current_session = self.current_session.jump_to_new_session()
+            except RpcRemoteException as e:
+                logger_yiri.error(e)
+                self.current_session.normalize_qqlite()
             time.sleep(self.query_interval)

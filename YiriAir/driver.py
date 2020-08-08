@@ -5,6 +5,13 @@ from poco.exceptions import PocoNoSuchNodeException
 from airtest.core.api import auto_setup, keyevent, start_app
 import logging
 
+logger_yiri_handler = logging.StreamHandler()
+logger_yiri_handler.setLevel(logging.INFO)
+logger_yiri_formatter = logging.Formatter(fmt='[%(levelname)s][%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M')
+logger_yiri_handler.setFormatter(logger_yiri_formatter)
+logger_yiri = logging.getLogger('YiriAir')
+logger_yiri.addHandler(logger_yiri_handler)
+logger_yiri.setLevel(logging.INFO)
 
 class Devices():
     DEFAULT = "Android:///"
@@ -78,6 +85,7 @@ class Session():
         if message_list:
             self.latest_message = message_list[-1]
         self.title = self.get_title()
+        logger_yiri.info('Session set up. Title: {}'.format(self.title))
 
     def normalize_qqlite(self):
         self.poco.normalize_qqlite()
@@ -94,11 +102,11 @@ class Session():
                     "com.tencent.qqlite:id/chat_item_content_layout")                
                 if msg.get_position()[0] < 0.5:
                     sender = msg_container.child("com.tencent.qqlite:id/chat_item_nick_name")
-                    sender = sender.get_text() if sender.exists() else ''
+                    sender = sender.get_text()[:-1] if sender.exists() else ''
                     txt, msg_type = _analyze_message_type(msg)
                     yield txt, msg_type, sender
         except PocoNoSuchNodeException as e:
-            print(e)
+            logger_yiri.error(e)
             self.normalize_qqlite()
 
     def get_message_list(self):
@@ -112,7 +120,7 @@ class Session():
             keyevent("ENTER")
             return True
         except PocoNoSuchNodeException as e:
-            print(e)
+            logger_yiri.error(e)
             self.normalize_qqlite()
             return False
 
@@ -120,7 +128,7 @@ class Session():
         try:
             return self.poco("com.tencent.qqlite:id/title").get_text()
         except PocoNoSuchNodeException as e:
-            print(e)
+            logger_yiri.error(e)
             self.normalize_qqlite()
 
     def exit(self):
