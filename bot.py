@@ -11,10 +11,12 @@ class YiriAir():
         self.query_interval = query_interval
         self.message_hooks = []
 
-    def on_message(self):
+    def on_message(self, message_type='Text'):
         def decorator(func):
             def decorated(message, title):
-                return func(message, title)
+                txt, msg_type, sender = message
+                if msg_type == message_type:
+                    return func(txt, title, sender)
             self.message_hooks.append(decorated)
             return decorated
         return decorator
