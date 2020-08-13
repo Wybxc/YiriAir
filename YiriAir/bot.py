@@ -1,7 +1,6 @@
 # -*- encoding=utf8 -*-
 
 import time
-from hrpc.exceptions import RpcRemoteException
 from .driver import PocoDriver, Session, logger_yiri
 
 

@@ -2,6 +2,7 @@
 import time
 from poco.drivers.android.uiautomation import AndroidUiautomationPoco
 from poco.exceptions import PocoNoSuchNodeException
+from hrpc.exceptions import RpcRemoteException
 from airtest.core.api import auto_setup, keyevent, start_app
 import logging
 
@@ -106,6 +107,9 @@ class Session():
                     txt, msg_type = _analyze_message_type(msg)
                     yield txt, msg_type, sender
         except PocoNoSuchNodeException as e:
+            logger_yiri.error(e)
+            self.normalize_qqlite()
+        except RpcRemoteException as e:
             logger_yiri.error(e)
             self.normalize_qqlite()
 
