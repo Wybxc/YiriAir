@@ -44,6 +44,11 @@ class YiriAir():
         '''
         return self.current_session.send_message(msg_text)
 
+    def is_at_me(self, msg_text: str) -> bool:
+        '''判断一条消息是否 @ 机器人。
+        '''
+        return self.current_session.info.nickname and '@{}'.format(self.current_session.info.nickname) in msg_text
+
     def run(self):
         '''主循环，运行机器人实例。
         '''
