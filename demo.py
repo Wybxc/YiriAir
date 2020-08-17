@@ -1,7 +1,7 @@
 from YiriAir import YiriAir, Devices
 
 if __name__ == '__main__':
-    yiri = YiriAir(Devices.XIAO_YAO)
+    yiri = YiriAir(Devices.逍遥)
     print('初始化完成。')
 
     @yiri.on_message()
