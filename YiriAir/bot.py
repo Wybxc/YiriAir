@@ -6,6 +6,34 @@ from functools import wraps
 from .driver import PocoDriver, Session, logger_yiri
 
 
+class Sender(dict):
+    '''消息来源的信息，包括会话类型、标题、来源的群昵称。
+    '''
+
+    def __init__(self, session_type, title, sender):
+        self['session_type'] = session_type
+        self['title'] = title
+        self['sender'] = sender
+
+    @property
+    def session_type(self):
+        '''会话类型。
+        '''
+        return self['session_type']
+
+    @property
+    def title(self):
+        '''标题。
+        '''
+        return self['title']
+
+    @property
+    def sender(self):
+        '''来源的群昵称，私聊时为空。
+        '''
+        return self['sender']
+
+
 class YiriAir():
     '''机器人主类，提供易用的 API 调用封装。
     '''
@@ -21,17 +49,20 @@ class YiriAir():
         self.query_interval = query_interval
         self.message_hooks = []
 
-    def on_message(self, message_type: str = 'Text'):
+    def on_message(self, session_type: str = 'All', message_type: str = 'Text'):
         '''注册消息处理函数，用作装饰器。
+
+        消息处理函数需要有两个参数`msg`和`sender`
 
         :param message_type: 消息类型，可以为 Text, Image, Voice, Unknown, Other。当前版本只有 Text 类型支持具体内容。
         '''
         def decorator(func):
             @wraps(func)
             def decorated(message, title):
-                txt, msg_type, sender = message
-                if msg_type == message_type:
-                    return func(txt, title, sender)
+                msg_text, msg_type, sender = message
+                if (session_type == 'All' or session_type == self.current_session.info.session_type) \
+                        and (message_type == 'All' or message_type == msg_type):
+                    return func(msg_text, Sender(self.current_session.info.session_type, title, sender))
             self.message_hooks.append(decorated)
             return decorated
         return decorator

@@ -96,10 +96,13 @@ class PocoDriver():
 
 
 class SessionInfo():
+    '''一个会话的信息，包括群名片、会话类型、最后一条消息。
+    '''
+
     def __init__(self):
-        self.nickname = None
-        self.session_type = None
-        self.latest_message = None
+        self.nickname = ''
+        self.session_type = 'Private'
+        self.latest_message = ('', 'Other', '')
 
 
 class Session():
@@ -223,17 +226,21 @@ class Session():
 
     @_poco_action()
     def get_title(self):
-        '''获取会话标题
+        '''获取会话标题。
 
         :returns: str，会话标题。
         '''
         return self.poco("com.tencent.qqlite:id/title").get_text()
 
-    @_poco_action(null='Non-Group')
-    def get_session_type_and_nickname(self):
+    @_poco_action(null='Private')
+    def get_session_type_and_nickname(self) -> Tuple[str, str]:
+        '''获取会话类型及群名片。
+
+        :returns: 会话类型（`Group`或`Private`）及群名片，若为非群聊，则群名片留空。
+        '''
         self.poco("com.tencent.qqlite:id/ivTitleBtnRightImage").click()
 
-        session_type = 'Non-Group'
+        session_type = 'Private'
         nickname = ''
         if self.poco(text="群聊成员").exists():
             session_type = 'Group'
