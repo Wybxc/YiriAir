@@ -87,11 +87,22 @@ class PocoDriver():
         footer = self.poco("com.tencent.qqlite:id/tw_main")
         while not footer.exists():
             keyevent("BACK")
+            start_app('com.tencent.qqlite')
         # 切换到第一列
         footer.child("com.tencent.qqlite:id/tab1").click()
         # 打开第一个聊天窗口
         self.poco("com.tencent.qqlite:id/contentFrame").offspring("com.tencent.qqlite:id/vPager").offspring(
             "com.tencent.qqlite:id/recent_chat_list").child("android.widget.LinearLayout")[0].click()
+
+
+class SessionInfo():
+    '''一个会话的信息，包括群名片、会话类型、最后一条消息。
+    '''
+
+    def __init__(self):
+        self.nickname = ''
+        self.session_type = 'Private'
+        self.latest_message = ('', 'Other', '')
 
 
 class Session():
@@ -104,22 +115,42 @@ class Session():
         '''
         self.poco = driver
         self._locked = False  # 锁机制：在执行需要poco的操作时会加锁，防止操作之间互相干扰
+        self.session_info_dict = {}
         self.init_session()
 
-    def init_session(self, hot=False):
+    def get_session_info(self) -> SessionInfo:
+        '''获取当前会话的信息。
+        '''
+        info = SessionInfo()
+
+        info.latest_message = None
+        message_list = self.get_message_list()
+        if message_list:
+            info.latest_message = message_list[-1]
+
+        info.session_type, info.nickname = self.get_session_type_and_nickname()
+
+        return info
+
+    def init_session(self, hot: bool = False):
         '''初始化会话，包括“最新”消息、会话标题。
 
         :param hot: 是否为“热”会话（收到新消息而打开的会话）。
         '''
         self._hot = hot
 
-        self.latest_message = None
-        message_list = self.get_message_list()
-        if message_list:
-            self.latest_message = message_list[-1]
-
         self.title = self.get_title()
-        logger_yiri.info('Session set up. Title: {}'.format(self.title))
+
+        info = self.session_info_dict.get(self.title)
+        if info and info.latest_message:
+            self._hot = False
+        if info is None:
+            info = self.get_session_info()
+        self.info = info
+        self.session_info_dict[self.title] = info
+
+        logger_yiri.info('Session set up. Title: {}, Nickname: {}, Session Type: {}'.format(
+            self.title, self.info.nickname, self.info.session_type))
 
     def normalize_qqlite(self):
         '''初始化或重新初始化QQ轻聊版，并初始化会话。
@@ -139,24 +170,28 @@ class Session():
                         time.sleep(0)
                     self._locked = True
 
-                    result = func(self, *args, **kwargs)                    
+                    result = func(self, *args, **kwargs)
                     return result
 
                 except PocoNoSuchNodeException as e:  # 未找到节点
                     logger_yiri.error(e)
+                    # 释放锁
+                    self._locked = False
                     self.normalize_qqlite()
                     return null
                 except RpcRemoteException as e:  # 节点变化过快或操作过快
                     logger_yiri.error(e)
+                    # 释放锁
+                    self._locked = False
                     self.normalize_qqlite()
                     return null
                 finally:
                     # 释放锁
-                    self._locked = False                    
+                    self._locked = False
             return decorated
         return decorator
 
-    @_poco_action()
+    @_poco_action(null=[])
     def get_message_list(self) -> List[Tuple[str, str, str]]:
         '''获取当前会话显示的所有消息。
 
@@ -165,8 +200,6 @@ class Session():
         def _get_message_list_iter():
             msg_list = self.poco(
                 "com.tencent.qqlite:id/listView1").child("com.tencent.qqlite:id/base_chat_item_layout")
-            if not msg_list.exists():
-                return
             for msg_container in msg_list:
                 msg = msg_container.child(
                     "com.tencent.qqlite:id/chat_item_content_layout")
@@ -193,11 +226,30 @@ class Session():
 
     @_poco_action()
     def get_title(self):
-        '''获取会话标题
+        '''获取会话标题。
 
         :returns: str，会话标题。
         '''
         return self.poco("com.tencent.qqlite:id/title").get_text()
+
+    @_poco_action(null='Private')
+    def get_session_type_and_nickname(self) -> Tuple[str, str]:
+        '''获取会话类型及群名片。
+
+        :returns: 会话类型（`Group`或`Private`）及群名片，若为非群聊，则群名片留空。
+        '''
+        self.poco("com.tencent.qqlite:id/ivTitleBtnRightImage").click()
+
+        session_type = 'Private'
+        nickname = ''
+        if self.poco(text="群聊成员").exists():
+            session_type = 'Group'
+            nickname = self.poco(text="我的群昵称").parent().child(
+                'com.tencent.qqlite:id/formitem_right_textview').get_text()
+
+        self.poco("com.tencent.qqlite:id/ivTitleBtnLeft").click()
+
+        return session_type, nickname
 
     def try_jump_to_new_session(self):
         '''检查是否有来自其他会话的消息，如果有，那么跳转到新的会话。
@@ -216,23 +268,23 @@ class Session():
         message_list = self.get_message_list()
         if message_list:
             if self._hot:
-                self.latest_message = message_list[-1]
+                self.info.latest_message = message_list[-1]
                 self._hot = False
                 return [message_list[-1]]
 
-            if self.latest_message is None:
-                self.latest_message = message_list[-1]
+            if self.info.latest_message is None:
+                self.info.latest_message = message_list[-1]
                 return []
 
             def check_latest_message_iter():
                 # TODO: 优化新消息判断逻辑
                 for msg in reversed(message_list):
-                    if msg == self.latest_message:
+                    if msg == self.info.latest_message:
                         break
                     yield msg
 
             result = reversed(list(check_latest_message_iter()))
-            self.latest_message = message_list[-1]
+            self.info.latest_message = message_list[-1]
             return result
         else:
             return []
