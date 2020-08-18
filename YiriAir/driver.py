@@ -104,6 +104,13 @@ class SessionInfo():
         self.session_type = 'Private'
         self.latest_message = ('', 'Other', '')
 
+    def __str__(self):
+        return '''Session Info: 
+            Session Type: {}
+            Nickname: {},
+            Lastest Message: {}
+        '''.format(self.session_type, self.nickname, self.latest_message)
+
 
 class Session():
     '''一个聊天会话。

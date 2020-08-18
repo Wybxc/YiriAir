@@ -80,6 +80,11 @@ class YiriAir():
         '''
         return self.current_session.info.nickname and '@{}'.format(self.current_session.info.nickname) in msg_text
 
+    def trim_at_me(self, msg_text: str) -> str:
+        '''去除消息中的@部分。
+        '''
+        return msg_text.replace('@{}'.format(self.current_session.info.nickname), '', 1).strip()
+
     def run(self):
         '''主循环，运行机器人实例。
         '''

@@ -31,5 +31,6 @@ setup(
     install_requires=[
         'airtest>=1.1.1',
         'pocoui>=1.0.78',
+        'emoji'
     ]
 )
