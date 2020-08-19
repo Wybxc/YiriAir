@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='YiriAir',
-    version='0.0.3.1',
+    version='0.0.4',
     description=(
         '基于安卓模拟器和 UI 控件搜索的 QQ 消息自动收发框架。'
     ),
@@ -31,5 +31,6 @@ setup(
     install_requires=[
         'airtest>=1.1.1',
         'pocoui>=1.0.78',
+        'emoji'
     ]
 )
