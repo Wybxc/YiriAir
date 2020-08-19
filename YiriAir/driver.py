@@ -190,7 +190,7 @@ class Session():
                     logger_yiri.error(e)
                     # 释放锁
                     self._locked = False
-                    self.normalize_qqlite()
+                    self.init_session()
                     return null
                 finally:
                     # 释放锁
