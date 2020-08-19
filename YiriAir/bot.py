@@ -4,6 +4,7 @@ import time
 import logging
 from functools import wraps
 from .driver import PocoDriver, Session, logger_yiri
+from .codec import encode_qq_face, decode_qq_face
 
 
 class Sender(dict):
@@ -62,6 +63,7 @@ class YiriAir():
                 msg_text, msg_type, sender = message
                 if (session_type == 'All' or session_type == self.current_session.info.session_type) \
                         and (message_type == 'All' or message_type == msg_type):
+                    msg_text = decode_qq_face(msg_text)
                     return func(msg_text, Sender(self.current_session.info.session_type, title, sender))
             self.message_hooks.append(decorated)
             return decorated
@@ -73,12 +75,18 @@ class YiriAir():
         :param msg_text: 要发送的消息。
         :returns: 是否成功，成功为 True，失败为 None.
         '''
+        msg_text = encode_qq_face(msg_text)
         return self.current_session.send_message(msg_text)
 
     def is_at_me(self, msg_text: str) -> bool:
         '''判断一条消息是否 @ 机器人。
         '''
         return self.current_session.info.nickname and '@{}'.format(self.current_session.info.nickname) in msg_text
+
+    def trim_at_me(self, msg_text: str) -> str:
+        '''去除消息中的@部分。
+        '''
+        return msg_text.replace('@{}'.format(self.current_session.info.nickname), '', 1).strip()
 
     def run(self):
         '''主循环，运行机器人实例。
