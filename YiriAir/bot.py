@@ -4,6 +4,7 @@ import time
 import logging
 from functools import wraps
 from .driver import PocoDriver, Session, logger_yiri
+from .codec import encode_qq_face, decode_qq_face
 
 
 class Sender(dict):
@@ -62,6 +63,7 @@ class YiriAir():
                 msg_text, msg_type, sender = message
                 if (session_type == 'All' or session_type == self.current_session.info.session_type) \
                         and (message_type == 'All' or message_type == msg_type):
+                    msg_text = decode_qq_face(msg_text)
                     return func(msg_text, Sender(self.current_session.info.session_type, title, sender))
             self.message_hooks.append(decorated)
             return decorated
@@ -73,6 +75,7 @@ class YiriAir():
         :param msg_text: 要发送的消息。
         :returns: 是否成功，成功为 True，失败为 None.
         '''
+        msg_text = encode_qq_face(msg_text)
         return self.current_session.send_message(msg_text)
 
     def is_at_me(self, msg_text: str) -> bool:

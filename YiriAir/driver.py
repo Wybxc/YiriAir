@@ -42,7 +42,7 @@ def _analyze_message_type(chat_item_content_layout: UIObjectProxy) -> Tuple[str,
         txt = chat_item_content_layout.get_text().strip()
         if txt[4:] == '请使用最新版手机QQ查看。':
             return '', 'Unknown'
-        else:
+        else:            
             return txt, 'Text'
     # 回复消息
     elif layout_type == 'android.widget.LinearLayout':

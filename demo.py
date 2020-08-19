@@ -9,8 +9,6 @@ if __name__ == '__main__':
     @yiri.on_message()
     def on_message(msg: str, sender: Sender):
         print('>>> ' + msg)
-        msg_hex = b2x(msg)
-        print('>>>[hex] ' + msg_hex)
         if yiri.is_at_me(msg) or sender.session_type == 'Private':
             yiri.send_message('msg={}, session_type={}, title={}, sender={}'
                               .format(msg, sender.session_type, sender.title, sender.sender))
