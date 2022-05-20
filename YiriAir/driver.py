@@ -27,16 +27,11 @@ def _analyze_message_type(chat_item_content_layout):
     # 文本消息（或不支持的消息）
     if layout_type == 'android.widget.TextView':
         txt = chat_item_content_layout.get_text().strip()
-        if txt[4:] == '请使用最新版手机QQ查看。':
-            return '', 'Unknown'
-        else:
-            return txt, 'Text'
-    # 回复消息
+        return ('', 'Unknown') if txt[4:] == '请使用最新版手机QQ查看。' else (txt, 'Text')
     elif layout_type == 'android.widget.LinearLayout':
         txt = chat_item_content_layout.child(
             'com.tencent.qqlite:id/chat_item_content_text').get_text().strip()
         return txt, 'Text'
-    # 图片、语音或多媒体信息
     elif layout_type == 'android.widget.RelativeLayout':
         # 图片
         if chat_item_content_layout.child("com.tencent.qqlite:id/pic").exists():
@@ -82,11 +77,10 @@ class Session():
         self._hot = hot
 
     def init_latest_message(self):
-        message_list = self.get_message_list()
-        if message_list:
+        if message_list := self.get_message_list():
             self.latest_message = message_list[-1]
         self.title = self.get_title()
-        logger_yiri.info('Session set up. Title: {}'.format(self.title))
+        logger_yiri.info(f'Session set up. Title: {self.title}')
 
     def normalize_qqlite(self):
         self.poco.normalize_qqlite()

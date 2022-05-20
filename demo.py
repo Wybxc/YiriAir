@@ -6,8 +6,8 @@ if __name__ == '__main__':
 
     @yiri.on_message()
     def on_message(msg, title, sender):
-        print('>>> ' + msg)
+        print(f'>>> {msg}')
         if msg[:4] == '####':
-            yiri.send_message('msg={}, title={}, sender={}'.format(msg, title, sender))
+            yiri.send_message(f'msg={msg}, title={title}, sender={sender}')
     
     yiri.run()
